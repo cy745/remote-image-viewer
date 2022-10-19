@@ -1,5 +1,4 @@
 import axios from "axios";
-import {baseUrl} from "../main";
 
 /**
  * 请求封装
@@ -9,7 +8,7 @@ import {baseUrl} from "../main";
  */
 export default function request(url, method = "GET", data = {}) {
     return axios.request({
-        url: baseUrl.value + url,
+        url: url,
         method: method,
         data: data
     })
