@@ -1,5 +1,5 @@
-import axios from "axios";
+import request from "./Request.js";
 
 export function getList() {
-    return axios.get("/api")
+    return request("/")
 }
