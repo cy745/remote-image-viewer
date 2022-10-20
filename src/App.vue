@@ -13,7 +13,7 @@ const storage = useLocalStorage(
 
 const showingImages = ref([])
 const images = ref([])
-const imageCardHeight = ref(100)
+const imageCardHeight = ref(200)
 const previewIndex = ref(-1)
 
 const previewImage = (index) => {
@@ -71,10 +71,11 @@ onMounted(() => {
             :inactive-icon="Sunny"
         />
       </el-header>
-      <el-main id="main" :style="{'--imageCardHeight':`${imageCardHeight}px`}">
+      <el-main id="main">
         <el-space wrap size="large" alignment="center">
           <ImageCard v-for="(image, index) of showingImages" :key="image"
                      :image-url="image"
+                     :height="imageCardHeight"
                      @click="previewImage(index)"/>
         </el-space>
       </el-main>
@@ -103,7 +104,5 @@ onMounted(() => {
 #main {
   min-height: 100vh;
   padding-top: 72px;
-
-  --imageCardHeight: 100px;
 }
 </style>

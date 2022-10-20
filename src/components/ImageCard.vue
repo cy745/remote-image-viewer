@@ -1,48 +1,42 @@
 <script setup>
 const emitter = defineEmits(['click'])
-const props = defineProps({imageUrl: String})
-
+const props = defineProps({
+  imageUrl: String,
+  height: {
+    type: Number,
+    default: 100
+  }
+})
 </script>
 
-<template>
-  <div class="h-32 aspect-square rounded-2xl pointer scale-100
-            transition duration-300 ease-out cursor-pointer overflow-hidden
-            hover:scale-105"
+<template class="template-container">
+  <div class="image_container rounded-2xl pointer scale-100
+            transition duration-500 ease cursor-pointer overflow-hidden
+            hover:scale-105 active:scale-95 active:duration-100 active:ease-in-out"
        @click="emitter('click')">
-    <el-image class="scale-110 hover:scale-100 transition duration-300 ease-out"
+    <el-image class="scale-110 hover:scale-100 transition duration-500 ease block"
+              :style="{height:`${ height }px`,minWidth:`${ height * 0.618 }px`}"
               :src="imageUrl" fit="cover">
       <template #placeholder>
-        <el-skeleton-item variant="image" style="height: 100%"/>
+        <el-skeleton-item variant="image" style="height: 100%;width: 100%"/>
       </template>
     </el-image>
   </div>
 </template>
 
 <style scoped lang="less">
-.hover_card {
-  border-radius: 15px;
-  transform: scale(1.0);
-  transition: all .3s ease-out;
+.image_container {
+  --image-container-border1-color: black;
+  --image-container-border2-color: white;
 
-  &:hover {
-    border-radius: 8px;
-    transform: scale(1.05);
+  .dark & {
+    --image-container-border1-color: white;
+    --image-container-border2-color: black;
   }
-}
 
-.image_card {
-  cursor: pointer;
-  display: block;
-  width: 100%;
-  height: var(--imageCardHeight);
-  min-width: calc(var(--imageCardHeight) * 0.618);
-  filter: blur(5px) brightness(1.1);
-  transform: scale(1.1);
-  transition: all .3s ease-out;
-
-  &:hover {
-    filter: blur(0px) brightness(1);
-    transform: scale(1);
+  &:hover,
+  &:focus {
+    box-shadow: 0 0 0 2px var(--image-container-border2-color), 0 0 0 5px var(--image-container-border1-color);
   }
 }
 </style>
