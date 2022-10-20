@@ -1,19 +1,23 @@
 <script setup>
 import {onMounted, ref, watch} from "vue";
 import {getList} from "./apis/FileApis.js";
-import {throttleFilter, useDark, useLocalStorage} from '@vueuse/core'
-import {Sunny, Moon} from '@element-plus/icons-vue'
-import {onKeyStroke} from '@vueuse/core'
+import {onKeyStroke, useDark, useLocalStorage} from '@vueuse/core'
+import {Moon, Sunny} from '@element-plus/icons-vue'
 
 const isDark = useDark()
 const storage = useLocalStorage(
     "App_Screen_Page_Info",
-    {page: 1, size: 10},
-    {eventFilter: throttleFilter(1000)}
+    {page: 1, size: 10}
 ).value
 
 const showingImages = ref([])
 const images = ref([])
+const imageCardHeight = ref(100)
+const previewIndex = ref(1)
+
+const previewImage = (index) => {
+  previewIndex.value = index
+}
 
 // 监听列表、页面数据
 watch([images, storage], ([list, storage]) => {
@@ -21,11 +25,13 @@ watch([images, storage], ([list, storage]) => {
 })
 
 onKeyStroke("ArrowLeft", () => {
+  if (previewIndex.value >= 0) return
   storage.page = Math.max(storage.page - 1, 0)
 })
 
 onKeyStroke("ArrowRight", () => {
-  storage.page = Math.min(storage.page + 1, Math.ceil(images.value.length / storage.page))
+  if (previewIndex.value >= 0) return
+  storage.page = Math.min(storage.page + 1, Math.ceil(images.value.length / storage.size))
 })
 
 onMounted(() => {
@@ -51,8 +57,7 @@ onMounted(() => {
           <template #default>
             <div style="display: flex; justify-content: center;align-items: center;gap: 20px; margin-right: 20px">
               <span>{{ storage.size }} 张/页</span>
-              <el-slider style="width: 100px;" size="small" v-model="storage.size" :min="1"
-                         :max="100"/>
+              <el-slider style="width: 100px;" size="small" :min="1" :max="100" v-model="storage.size"/>
             </div>
           </template>
         </el-pagination>
@@ -65,23 +70,22 @@ onMounted(() => {
             :inactive-icon="Sunny"
         />
       </el-header>
-      <el-main id="main">
+      <el-main id="main" :style="{'--imageCardHeight':`${imageCardHeight}px`}">
         <el-space wrap size="large" alignment="center">
-          <el-card class="hover_card" shadow="hover" :body-style="{ padding: '0px', minWidth:'140px'}"
+          <el-card class="hover_card" shadow="hover" :body-style="{ padding: '0px'}"
                    v-for="(image, index) of showingImages" :key="image">
-            <el-image class="image_card" fit="cover"
-                      preview-teleported
-                      :preview-src-list="showingImages"
-                      :initial-index="index"
-                      :src="image">
+            <el-image class="image_card" :src="image" fit="cover" @click="previewImage(index)">
               <template #placeholder>
-                <el-skeleton-item variant="image" style="width: 140px; height: 100%"/>
+                <el-skeleton-item variant="image" style="height: 100%"/>
               </template>
             </el-image>
           </el-card>
         </el-space>
       </el-main>
     </el-container>
+
+    <el-image-viewer v-if="previewIndex >= 0" @close="previewImage(-1)"
+                     :initial-index="previewIndex" :url-list="showingImages"/>
   </div>
 </template>
 
@@ -103,11 +107,13 @@ onMounted(() => {
 #main {
   min-height: 100vh;
   padding-top: 72px;
+
+  --imageCardHeight: 100px;
 }
 
 .hover_card {
   border-radius: 15px;
-  transform: scale(1);
+  transform: scale(1.0);
   transition: all .3s ease-out;
 
   &:hover {
@@ -117,13 +123,17 @@ onMounted(() => {
 }
 
 .image_card {
-  width: 100%;
-  height: 30vh;
+  cursor: pointer;
   display: block;
+  width: 100%;
+  height: var(--imageCardHeight);
+  min-width: calc(var(--imageCardHeight) * 0.618);
+  filter: blur(5px) brightness(1.1);
   transform: scale(1.1);
   transition: all .3s ease-out;
 
   &:hover {
+    filter: blur(0px) brightness(1);
     transform: scale(1);
   }
 }
