@@ -1,23 +1,37 @@
 <script setup>
-import {onMounted, ref, watch} from "vue";
-import {getList} from "./apis/FileApis.js";
+import {getCurrentInstance, onMounted, reactive, ref, watch} from "vue";
 import {onKeyStroke, useDark, useLocalStorage} from '@vueuse/core'
+import {getList} from "./apis/FileApis.js";
 import {Moon, Sunny} from '@element-plus/icons-vue'
 import ImageCard from "./components/ImageCard.vue";
 
+const app = getCurrentInstance()
 const isDark = useDark()
-const storage = useLocalStorage(
-    "App_Screen_Page_Info",
-    {page: 1, size: 10}
-).value
+const storage = useLocalStorage("App_PageInfo", {
+  page: 1,
+  size: 10
+}).value
 
+const imageCardHeight = ref(200)
 const showingImages = ref([])
 const images = ref([])
-const imageCardHeight = ref(200)
-const previewIndex = ref(-1)
+const previewing = ref(false)
+const viewerConfig = reactive({
+  title: false,
+  // toolbar: {
+  //   download: function () {
+  //     console.log("download")
+  //   }
+  // },
+  show: () => previewing.value = true,
+  hide: () => previewing.value = false
+})
 
-const previewImage = (index) => {
-  previewIndex.value = index
+const previewImages = (index) => {
+  app.proxy.$viewerApi({
+    images: showingImages.value,
+    options: {initialViewIndex: index, ...viewerConfig}
+  })
 }
 
 // 监听列表、页面数据
@@ -26,12 +40,12 @@ watch([images, storage], ([list, storage]) => {
 })
 
 onKeyStroke("ArrowLeft", () => {
-  if (previewIndex.value >= 0) return
+  if (previewing.value) return
   storage.page = Math.max(storage.page - 1, 0)
 })
 
 onKeyStroke("ArrowRight", () => {
-  if (previewIndex.value >= 0) return
+  if (previewing.value) return
   storage.page = Math.min(storage.page + 1, Math.ceil(images.value.length / storage.size))
 })
 
@@ -76,13 +90,11 @@ onMounted(() => {
           <ImageCard v-for="(image, index) of showingImages" :key="image"
                      :image-url="image"
                      :height="imageCardHeight"
-                     @click="previewImage(index)"/>
+                     @click="previewImages(index)"
+          />
         </el-space>
       </el-main>
     </el-container>
-
-    <el-image-viewer v-if="previewIndex >= 0" @close="previewImage(-1)"
-                     :initial-index="previewIndex" :url-list="showingImages"/>
   </div>
 </template>
 
