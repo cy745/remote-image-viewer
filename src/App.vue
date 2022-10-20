@@ -3,6 +3,7 @@ import {onMounted, ref, watch} from "vue";
 import {getList} from "./apis/FileApis.js";
 import {onKeyStroke, useDark, useLocalStorage} from '@vueuse/core'
 import {Moon, Sunny} from '@element-plus/icons-vue'
+import ImageCard from "./components/ImageCard.vue";
 
 const isDark = useDark()
 const storage = useLocalStorage(
@@ -13,7 +14,7 @@ const storage = useLocalStorage(
 const showingImages = ref([])
 const images = ref([])
 const imageCardHeight = ref(100)
-const previewIndex = ref(1)
+const previewIndex = ref(-1)
 
 const previewImage = (index) => {
   previewIndex.value = index
@@ -72,14 +73,9 @@ onMounted(() => {
       </el-header>
       <el-main id="main" :style="{'--imageCardHeight':`${imageCardHeight}px`}">
         <el-space wrap size="large" alignment="center">
-          <el-card class="hover_card" shadow="hover" :body-style="{ padding: '0px'}"
-                   v-for="(image, index) of showingImages" :key="image">
-            <el-image class="image_card" :src="image" fit="cover" @click="previewImage(index)">
-              <template #placeholder>
-                <el-skeleton-item variant="image" style="height: 100%"/>
-              </template>
-            </el-image>
-          </el-card>
+          <ImageCard v-for="(image, index) of showingImages" :key="image"
+                     :image-url="image"
+                     @click="previewImage(index)"/>
         </el-space>
       </el-main>
     </el-container>
@@ -109,32 +105,5 @@ onMounted(() => {
   padding-top: 72px;
 
   --imageCardHeight: 100px;
-}
-
-.hover_card {
-  border-radius: 15px;
-  transform: scale(1.0);
-  transition: all .3s ease-out;
-
-  &:hover {
-    border-radius: 8px;
-    transform: scale(1.05);
-  }
-}
-
-.image_card {
-  cursor: pointer;
-  display: block;
-  width: 100%;
-  height: var(--imageCardHeight);
-  min-width: calc(var(--imageCardHeight) * 0.618);
-  filter: blur(5px) brightness(1.1);
-  transform: scale(1.1);
-  transition: all .3s ease-out;
-
-  &:hover {
-    filter: blur(0px) brightness(1);
-    transform: scale(1);
-  }
 }
 </style>
